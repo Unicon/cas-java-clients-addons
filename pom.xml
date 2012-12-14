@@ -10,7 +10,7 @@
     <description>A collection of useful extensions to Java-based client libraries for JA-SIG CAS.</description>
     <groupId>net.unicon.cas</groupId>
     <artifactId>cas-java-clients-addons</artifactId>
-    <version>0.1-TEST-RUN</version>
+    <version>0.1-TEST-RUN-SNAPSHOT</version>
     <packaging>jar</packaging>
     <modelVersion>4.0.0</modelVersion>
     <inceptionYear>2012</inceptionYear>

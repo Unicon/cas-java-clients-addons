@@ -18,25 +18,19 @@ public class Cas20ServiceTicketJsonValidatorTests {
     @Test
     public void testJsonResponse() throws TicketValidationException, IOException {
         final Cas20ServiceTicketJsonValidator validator = new Cas20ServiceTicketJsonValidator("https://cas.server.edu");
-
         final ObjectMapper mapper = new ObjectMapper();
-
         final Map<String, Object> attributes = new LinkedHashMap<String, Object>();
         attributes.put("name", "value");
 
         final String userId = "userId";
-
         final TicketValidationJsonResponse response = new TicketValidationJsonResponse(userId, attributes);
-
         final String jsonResult = mapper.writeValueAsString(response);
+        final Assertion assertion = validator.parseResponseFromServer(jsonResult);
 
-        final Assertion assertion = validator.parseJsonResponseFromServer(jsonResult);
         Assert.assertNotNull(assertion);
-
         Assert.assertEquals(userId, assertion.getPrincipal().getName());
         Assert.assertEquals(attributes, assertion.getAttributes());
         Assert.assertEquals(attributes, assertion.getPrincipal().getAttributes());
 
     }
-
 }

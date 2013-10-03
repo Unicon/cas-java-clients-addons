@@ -11,3 +11,6 @@ build.sh
 pom.xml.releaseBackup
 release.properties
 
+*.iml
+.gradle
+build

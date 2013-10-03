@@ -1,0 +1,135 @@
+apply plugin: "maven"
+apply plugin: "java"
+apply plugin: "signing"
+apply plugin: "jdepend"
+apply plugin: "checkstyle"
+
+apply from: 'http://tellurianring.com/projects/gradle-plugins/gradle-release/apply.groovy'
+
+
+buildscript {
+    repositories {
+        maven { url "http://repo.springsource.org/plugins-release" }
+    }
+    dependencies {
+        classpath "org.springframework.build.gradle:propdeps-plugin:0.0.4"
+    }
+}
+
+apply plugin: "propdeps"
+
+repositories {
+    mavenCentral artifactUrls: ["http://developer.jasig.org/repo/content/groups/m2-legacy/", "http://central.maven.org/maven2/"]
+    maven { url "http://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "http://oss.sonatype.org/content/repositories/releases/" }
+}
+
+sourceCompatibility = 1.6
+targetCompatibility = 1.6
+
+dependencies {
+    compile("net.unicon.cas:cas-addons:${casServerAddonsVersion}") {
+        exclude module: "slf4j-log4j12"
+    }
+    compile "org.jasig.cas.client:cas-client-core:${casClientVersion}"
+    compile "org.springframework.security:spring-security-cas:${springSecurityVersion}"
+    compile "com.fasterxml.jackson.core:jackson-databind:${jacksonVersion}"
+    compile "org.slf4j:slf4j-api:${slf4jVersion}"
+    runtime "org.slf4j:jcl-over-slf4j:${slf4jVersion}"
+    provided "javax.servlet:servlet-api:${servletVersion}"
+    testCompile "org.codehaus.groovy:groovy-all:${groovyVersion}"
+    testCompile "junit:junit:${junitVersion}"
+    testCompile "org.spockframework:spock-core:${spockVersion}"
+}
+
+test {
+    include "**/*Tests.*"
+    exclude "**/Abstract*.*"
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = "javadoc"
+    from "build/docs/javadoc"
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allSource
+    classifier = "sources"
+}
+
+artifacts {
+    archives jar
+    archives javadocJar
+    archives sourcesJar
+}
+
+signing {
+    sign configuraions.archives
+}
+
+createRelaseTag.dependsOn uploadArchives
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            //TODO: setup repository and snapshotRepository
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+            snapshotRepository(url: "https://oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(username: sonatypeUsername, password: sonatypePassword)
+            }
+            pom.project {
+                name "Jasig Central Authentication Service Java-based clients add-ons"
+                description "A collection of useful extensions to Java-based client libraries for JA-SIG CAS."
+                packaging "jar"
+                inceptionYear "2012"
+                organization {
+                    name "Unicon Inc."
+                    url "http://unicon.net"
+                }
+                url "http://unicon.github.com/cas-java-clients-addons/"
+                licences {
+                    licence {
+                        name "Apache License v2.0"
+                        url "http://www.apache.org/licenses/LICENSE-2.0.html"
+                    }
+                }
+
+                scm {
+                    connection "scm:git:git@github.com:Unicon/cas-java-clients-addons.git"
+                    developerConnection "scm:git:git@github.com:Unicon/cas-java-clients-addons.git"
+                    url "https://github.com/Unicon/cas-java-clients-addons"
+                    tag "master"
+                }
+                issueManagement {
+                    url "https://github.com/Unicon/cas-java-clients-addons/issues"
+                    system "Github"
+                }
+                developers {
+                    developer {
+                        id "dima767"
+                        name "Dmitriy Kopylenko"
+                        email "dkopylenko@unicon.net"
+                        organization "Unicon, Inc."
+                        organizationUrl "http://unicon.net"
+                        roles {
+                            role "Developer"
+                        }
+                    }
+                    developer {
+                        id "mmoayyed"
+                        name "Misagh Moayyed"
+                        email "mmoayyed@unicon.net"
+                        organization "Unicon, Inc."
+                        organizationUrl "http://unicon.net"
+                        roles {
+                            role "Developer"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
